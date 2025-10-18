@@ -1,33 +1,40 @@
+console.log('app carregado');
+
 class Aluno {
-  constructor(nome, idade, curso, notaFinal) {
-    this.nome = nome;
-    this.idade = idade;
-    this.curso = curso;
-    this.notaFinal = notaFinal;
-  }
+    constructor(nome, idade, curso, notaFinal) {
+        this.nome = nome;
+        this.idade = idade;
+        this.curso = curso;
+        this.notaFinal = notaFinal;
+    }
 
-  isAprovado() {
-    return this.notaFinal >= 7;
-  }
+    isAprovado() {
+        return this.notaFinal >= 7;
+    }
 
-  toString() {
-    const status = this.isAprovado() ? 'Aprovado' : 'Reprovado';
-    return `${this.nome} - ${this.idade} - ${this.curso} - Nota: ${this.notaFinal} - (${status})`;
-  }
+    toString() {
+        const status = this.isAprovado() ? 'Aprovado' : 'Reprovado';
+        return `${this.nome} - ${this.idade} - ${this.curso} - Nota: ${this.notaFinal} - (${status})`;
+    }
 }
 
 const alunos = [];
 
 let indiceEdicao = null;
 
-function salvarAluno(evento){
-    evento.preventDefault();
+const mensagem = document.getElementById('mensagem');
 
-    const inputNome = document.getElementById('nome');
-    const inputIdade = document.getElementById('idade');
-    const selectCurso = document.getElementById('curso');
-    const inputNota = document.getElementById('nota');
-    const mensagem = document.getElementById('mensagem');
+const form = document.getElementById('form-aluno');
+const inputNome = document.getElementById('nome');
+const inputIdade = document.getElementById('idade');
+const selectCurso = document.getElementById('curso');
+const inputNota = document.getElementById('nota');
+const tbody = document.getElementById('tbody-alunos');
+const btnSalvar = document.getElementById('btn-salvar');
+
+
+form.addEventListener('submit', (evento) => {
+    evento.preventDefault();
 
     const nome = inputNome.value;
     const idade = inputIdade.value;
@@ -40,7 +47,7 @@ function salvarAluno(evento){
     }
 
     const idadeNum = Number(idade);
-        if (Number.isNaN(idadeNum) || idadeNum < 1) {
+    if (Number.isNaN(idadeNum) || idadeNum < 1) {
         mensagem.style.color = 'red';
         mensagem.textContent = 'A idade deve ser um número maior que 0.';
         return;
@@ -54,57 +61,77 @@ function salvarAluno(evento){
     }
 
     const aluno = new Aluno(nome, Number(idade), curso, Number(nota));
+    console.log(aluno.toString());
 
     if (indiceEdicao === null) {
         alunos.push(aluno);
         mensagem.style.color = 'green';
         mensagem.textContent = 'Aluno cadastrado com sucesso!';
+        console.log(`Aluno cadastrado`);
     } else {
-        alunos[indiceEdicao] = aluno; 
+        alunos[indiceEdicao] = aluno;
         indiceEdicao = null;
+        btnSalvar.textContent = 'Cadastrar';
         mensagem.style.color = 'green';
         mensagem.textContent = 'Edição salva com sucesso!';
-    }   
+        console.log(`Aluno editado`);
+    }
 
     renderTabela();
 
-    document.querySelector('form').reset();
-};
+    console.log(alunos);
+
+    form.reset();
+});
 
 function renderTabela() {
-  const tbody = document.getElementById('tbody-alunos');
-  tbody.innerHTML = '';
+    const tbody = document.getElementById('tbody-alunos');
+    tbody.innerHTML = '';
 
-  for (let i = 0; i < alunos.length; i++) {
-        const aluno = alunos[i];
+    alunos.forEach((aluno, index) => {
         const tr = document.createElement('tr');
 
         tr.innerHTML = `
-            <td>${aluno.nome}</td>
-            <td>${aluno.idade}</td>
-            <td>${aluno.curso}</td>
-            <td>${aluno.notaFinal}</td>
-            <td>${aluno.isAprovado() ? 'Aprovado' : 'Reprovado'}</td>
-            <td>
-                <button type="button" onclick="editarAluno(${i})">Editar</button>
-                <button type="button" onclick="excluirAluno(${i})">Excluir</button>
-            </td>
-        `;
+      <td>${aluno.nome}</td>
+      <td>${aluno.idade}</td>
+      <td>${aluno.curso}</td>
+      <td>${aluno.notaFinal}</td>
+      <td>${aluno.isAprovado() ? 'Aprovado' : 'Reprovado'}</td>
+      <td>
+        <button type="button" class="btn-editar" data-index="${index}">Editar</button>
+        <button type="button" class="btn-excluir" data-index="${index}">Excluir</button>
+      </td>
+    `;
+
         tbody.appendChild(tr);
+    });
+}
+
+tbody.addEventListener('click', (evento) => {
+    const botao = evento.target;
+
+    if (botao.classList.contains('btn-excluir')) {
+        const indice = botao.dataset.index;
+        const nomeAlunoExcluido = alunos[indice].nome;
+        alunos.splice(indice, 1);
+        renderTabela();
+
+        console.log(`Aluno "${nomeAlunoExcluido}" excluído`);
     }
-}
 
-function excluirAluno(index){
-    alunos.splice(index,1);
-    renderTabela();
-}
+    if (botao.classList.contains('btn-editar')) {
+        const indice = Number(botao.dataset.index);
+        const aluno = alunos[indice];
 
-function editarAluno(index) {
-    const aluno = alunos[index];
-    document.getElementById('nome').value = aluno.nome;
-    document.getElementById('idade').value = aluno.idade;
-    document.getElementById('curso').value = aluno.curso;
-    document.getElementById('nota').value = aluno.notaFinal;
-    
-    indiceEdicao = index;
-}
+        inputNome.value = aluno.nome;
+        inputIdade.value = aluno.idade;
+        selectCurso.value = aluno.curso;
+        inputNota.value = aluno.notaFinal;
+
+        btnSalvar.textContent = 'Salvar edição';
+        indiceEdicao = indice;
+        mensagem.style.color = 'blue';
+        mensagem.textContent = 'Editando aluno...';
+    }
+});
+
