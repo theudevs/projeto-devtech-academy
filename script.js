@@ -1,8 +1,24 @@
+class Aluno {
+  constructor(nome, idade, curso, notaFinal) {
+    this.nome = nome;
+    this.idade = idade;
+    this.curso = curso;
+    this.notaFinal = notaFinal;
+  }
+
+  isAprovado() {
+    return this.notaFinal >= 7;
+  }
+
+  toString() {
+    const status = this.isAprovado() ? 'Aprovado' : 'Reprovado';
+    return `${this.nome} - ${this.idade} - ${this.curso} - Nota: ${this.notaFinal} - (${status})`;
+  }
+}
 
 const alunos = [];
 
 let indiceEdicao = null;
-
 
 function salvarAluno(evento){
     evento.preventDefault();
@@ -37,12 +53,7 @@ function salvarAluno(evento){
         return;
     }
 
-    const aluno = {
-        nome: inputNome.value,
-        idade: Number(inputIdade.value),
-        curso: selectCurso.value,
-        nota: Number(inputNota.value)
-    };
+    const aluno = new Aluno(nome, Number(idade), curso, Number(nota));
 
     if (indiceEdicao === null) {
         alunos.push(aluno);
@@ -72,7 +83,8 @@ function renderTabela() {
             <td>${aluno.nome}</td>
             <td>${aluno.idade}</td>
             <td>${aluno.curso}</td>
-            <td>${aluno.nota}</td>
+            <td>${aluno.notaFinal}</td>
+            <td>${aluno.isAprovado() ? 'Aprovado' : 'Reprovado'}</td>
             <td>
                 <button type="button" onclick="editarAluno(${i})">Editar</button>
                 <button type="button" onclick="excluirAluno(${i})">Excluir</button>
@@ -92,9 +104,7 @@ function editarAluno(index) {
     document.getElementById('nome').value = aluno.nome;
     document.getElementById('idade').value = aluno.idade;
     document.getElementById('curso').value = aluno.curso;
-    document.getElementById('nota').value = aluno.nota;
+    document.getElementById('nota').value = aluno.notaFinal;
     
     indiceEdicao = index;
 }
-
-
